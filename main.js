@@ -9,9 +9,14 @@ const ctx = canvas.getContext("2d");
 
 const screenLength = canvas.height;
 const characterHitBoxWidth = screenLength / 30;
-const gapHeight = characterHitBoxWidth * 5;
+const gapHeight = characterHitBoxWidth * 8;
 let obstacles = [];
 const obstacleInterval = 2000; // New obstacle every 2 seconds
+let characterPosX = 100;
+let characterPosY = 200;
+let velocity = 0;
+const gravity = 0.15;
+const difficultyFactor = 5;
 
 //=======Functions=======
 
@@ -45,10 +50,16 @@ function GetTime(startTime) {
 }
 
 function GenerateObstacle() {
+  //Get the height of one pipe
   const pipeHeight = screenLength / 2 - gapHeight;
+
+  //Get the height variance of a pipe
   const heightVariance = (Math.random() * 2 - 1) * (pipeHeight / 2);
-  console.log(heightVariance);
+
+  //Set the pipe to reach the middle
   const posY = screenLength / 2;
+
+  //Push those variables in an array
   obstacles.push({
     x: screenLength,
     height: posY,
@@ -56,9 +67,11 @@ function GenerateObstacle() {
   });
 }
 
+function Jump() {
+  const jumpHeight = gapHeight;
+  characterPosX = +gapHeight;
+}
 //==========================================
-
-const difficultyFactor = 5;
 
 function drawCanvas(startTime) {
   // Clear the entire canvas
@@ -100,7 +113,15 @@ function drawCanvas(startTime) {
     );
   }
 
-  character.Draw(ctx, 100, 200, characterHitBoxWidth);
+  //Clean up Obstacles
+  if (obstacles.length > 0 && obstacles[0].x + pipeWidth < 0) {
+    obstacles.shift();
+  }
+
+  //Make the character fall with gravity and velocity
+  velocity += gravity;
+  characterPosY += velocity;
+  character.Draw(ctx, characterPosX, characterPosY, characterHitBoxWidth);
 }
 
 function Init() {
@@ -117,5 +138,9 @@ function Init() {
     GenerateObstacle();
   }, obstacleInterval);
 }
+
+document.addEventListener("keydown", () => {
+  velocity = -5;
+});
 
 Init();
