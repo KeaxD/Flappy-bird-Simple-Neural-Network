@@ -1,4 +1,5 @@
 import * as character from "./character.js";
+import * as clock from "./clock.js";
 
 // Access the canvas element using its ID
 const canvas = document.getElementById("myCanvas");
@@ -16,8 +17,9 @@ let characterPosX = 100;
 let characterPosY = 200;
 let velocity = 0;
 const gravity = 0.15;
-const difficultyFactor = 5;
 let gameIsOver = false;
+let gameLoopInterval;
+let obstacleGenerationInterval;
 
 //=======Functions=======
 
@@ -42,14 +44,6 @@ function DrawObstacle(posX, heightVariance) {
   //Draw both pipe
   DrawBottomPipe(posX, bottomPipeHeight);
   DrawTopPipe(posX, topPipeHeight);
-}
-
-// Function to calculate and format elapsed time
-function GetTime(startTime) {
-  const currentTime = new Date();
-  const elapsedTime = currentTime - startTime;
-
-  return elapsedTime;
 }
 
 function GenerateObstacle() {
@@ -78,15 +72,6 @@ function CollisionDetection(obstacle) {
       upperHitBox <= screenLength - obstacle.heightVariance - gapHeight)
   ) {
     gameIsOver = true;
-    console.log(gameIsOver);
-    console.log("upperHitBox = " + upperHitBox);
-    console.log("lowerHitBox = " + lowerHitBox);
-    console.log("obstacle.heightVariance = " + obstacle.heightVariance);
-    console.log(screenLength - obstacle.heightVariance - gapHeight);
-    console.log(lowerHitBox >= obstacle.heightVariance);
-    console.log(
-      upperHitBox <= screenLength - obstacle.heightVariance - gapHeight
-    );
   }
 }
 //==========================================
@@ -98,24 +83,8 @@ function drawCanvas(startTime) {
   // Draw a hollow rectangle that takes the entire canvas
   ctx.strokeRect(0, 0, screenLength, screenLength);
 
-  const elapsedTime = GetTime(startTime);
-
-  const hours = Math.floor(elapsedTime / 3600000)
-    .toString()
-    .padStart(2, "0");
-  const minutes = Math.floor((elapsedTime % 3600000) / 60000)
-    .toString()
-    .padStart(2, "0");
-  const seconds = Math.floor((elapsedTime % 60000) / 1000)
-    .toString()
-    .padStart(2, "0");
-  const milliseconds = (elapsedTime % 1000).toString().padStart(3, "0");
-
-  var formattedTime = `${hours}:${minutes}:${seconds}:${milliseconds}`;
-
-  ctx.font = "20px Georgia";
-  ctx.strokeStyle = "black";
-  ctx.strokeText("Elapsed Time: " + formattedTime, 10, 50);
+  //Draw the clock
+  clock.Draw(ctx, startTime);
 
   //Draw assets
   for (let i = 0; i < obstacles.length; i++) {
@@ -143,6 +112,12 @@ function drawCanvas(startTime) {
 }
 
 function Init() {
+  // Reset game state
+  obstacles = [];
+  characterPosX = 100;
+  characterPosY = 200;
+  velocity = 0;
+  gameIsOver = false;
   // Start timer
   const startTime = new Date();
 
@@ -150,21 +125,27 @@ function Init() {
   drawCanvas(startTime);
 
   // Update the canvas every 10 milliseconds
-  let game = setInterval(() => {
+  gameLoopInterval = setInterval(() => {
     if (!gameIsOver) {
       drawCanvas(startTime);
     } else {
-      clearInterval(game);
+      clearInterval(gameLoopInterval);
     }
   }, 10);
 
-  setInterval(() => {
+  obstacleGenerationInterval = setInterval(() => {
     GenerateObstacle();
   }, obstacleInterval);
 }
 
-document.addEventListener("keydown", () => {
-  velocity = -5;
+document.addEventListener("keydown", (e) => {
+  if (e.keyCode === 82 && gameIsOver) {
+    clearInterval(gameLoopInterval);
+    clearInterval(obstacleGenerationInterval);
+    Init();
+  } else {
+    velocity = -5;
+  }
 });
 
 Init();
