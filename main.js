@@ -17,28 +17,31 @@ let characterPosY = 200;
 let velocity = 0;
 const gravity = 0.15;
 const difficultyFactor = 5;
+let gameIsOver = false;
 
 //=======Functions=======
 
 // Draw a bottom pipe
-function DrawBottomPipe(posX, posY, height) {
+function DrawBottomPipe(posX, posY) {
   ctx.strokeStyle = "yellow";
-  ctx.strokeRect(posX, screenLength - posY - height, pipeWidth, height);
+  ctx.strokeRect(posX, screenLength - posY, pipeWidth, screenLength);
 }
 
 // Draw a top pipe
-function DrawTopPipe(posX, posY, height) {
+function DrawTopPipe(posX, height) {
   ctx.strokeStyle = "yellow";
   ctx.strokeRect(posX, 0, pipeWidth, height);
 }
 
 // Use both functions to draw an obstacle
-function DrawObstacle(posX, posY, heightVariance) {
-  const bottomPipeHeight = posY + Math.floor(heightVariance);
+function DrawObstacle(posX, heightVariance) {
+  //make the bottom pipe the height variance
+  const bottomPipeHeight = heightVariance;
+  //Make the top pipe fill up the space left
   const topPipeHeight = screenLength - bottomPipeHeight - gapHeight;
-
-  DrawBottomPipe(posX, 0, bottomPipeHeight);
-  DrawTopPipe(posX, screenLength - topPipeHeight, topPipeHeight);
+  //Draw both pipe
+  DrawBottomPipe(posX, bottomPipeHeight);
+  DrawTopPipe(posX, topPipeHeight);
 }
 
 // Function to calculate and format elapsed time
@@ -50,26 +53,41 @@ function GetTime(startTime) {
 }
 
 function GenerateObstacle() {
-  //Get the height of one pipe
-  const pipeHeight = screenLength / 2 - gapHeight;
-
-  //Get the height variance of a pipe
-  const heightVariance = (Math.random() * 2 - 1) * (pipeHeight / 2);
-
-  //Set the pipe to reach the middle
-  const posY = screenLength / 2;
+  //Get a random pipe height with a max height and a minimum of 40pixels
+  const maxPipeHeight = screenLength - gapHeight - 40;
+  const randHeight = Math.random() * maxPipeHeight + 80;
 
   //Push those variables in an array
   obstacles.push({
     x: screenLength,
-    height: posY,
-    heightVariance: heightVariance,
+    heightVariance: randHeight,
   });
 }
 
 function Jump() {
-  const jumpHeight = gapHeight;
-  characterPosX = +gapHeight;
+  characterPosY = +gapHeight;
+}
+
+function CollisionDetection(obstacle) {
+  //Character's top and bottom Hitboxes
+  let upperHitBox = characterPosY - characterHitBoxWidth;
+  let lowerHitBox = characterPosY + characterHitBoxWidth;
+  if (
+    characterPosX + characterHitBoxWidth >= obstacle.x &&
+    (lowerHitBox >= screenLength - obstacle.heightVariance ||
+      upperHitBox <= screenLength - obstacle.heightVariance - gapHeight)
+  ) {
+    gameIsOver = true;
+    console.log(gameIsOver);
+    console.log("upperHitBox = " + upperHitBox);
+    console.log("lowerHitBox = " + lowerHitBox);
+    console.log("obstacle.heightVariance = " + obstacle.heightVariance);
+    console.log(screenLength - obstacle.heightVariance - gapHeight);
+    console.log(lowerHitBox >= obstacle.heightVariance);
+    console.log(
+      upperHitBox <= screenLength - obstacle.heightVariance - gapHeight
+    );
+  }
 }
 //==========================================
 
@@ -95,8 +113,6 @@ function drawCanvas(startTime) {
 
   var formattedTime = `${hours}:${minutes}:${seconds}:${milliseconds}`;
 
-  const speed = elapsedTime / difficultyFactor;
-
   ctx.font = "20px Georgia";
   ctx.strokeStyle = "black";
   ctx.strokeText("Elapsed Time: " + formattedTime, 10, 50);
@@ -106,16 +122,18 @@ function drawCanvas(startTime) {
     // Move obstacle to the left
     obstacles[i].x -= 2;
     // Draw the obstacle at its new position
-    DrawObstacle(
-      obstacles[i].x,
-      obstacles[i].height,
-      obstacles[i].heightVariance
-    );
-  }
+    DrawObstacle(obstacles[i].x, obstacles[i].heightVariance);
 
-  //Clean up Obstacles
-  if (obstacles.length > 0 && obstacles[0].x + pipeWidth < 0) {
-    obstacles.shift();
+    //Clean up Obstacles as soon as it passes the bird's X coordinates
+    if (
+      obstacles.length > 0 &&
+      obstacles[0].x + pipeWidth < characterPosX - characterHitBoxWidth
+    ) {
+      obstacles.shift();
+    }
+
+    //Check for collision
+    CollisionDetection(obstacles[i]);
   }
 
   //Make the character fall with gravity and velocity
@@ -132,7 +150,13 @@ function Init() {
   drawCanvas(startTime);
 
   // Update the canvas every 10 milliseconds
-  setInterval(() => drawCanvas(startTime), 10);
+  let game = setInterval(() => {
+    if (!gameIsOver) {
+      drawCanvas(startTime);
+    } else {
+      clearInterval(game);
+    }
+  }, 10);
 
   setInterval(() => {
     GenerateObstacle();
