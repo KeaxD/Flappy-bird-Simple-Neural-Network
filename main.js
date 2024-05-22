@@ -20,6 +20,8 @@ const gravity = 0.15;
 let gameIsOver = false;
 let gameLoopInterval;
 let obstacleGenerationInterval;
+let score;
+let pipePoints = 10;
 
 //=======Functions=======
 
@@ -62,6 +64,12 @@ function Jump() {
   characterPosY = +gapHeight;
 }
 
+function OffLimitsDetection() {
+  if (characterPosY + characterHitBoxWidth >= screenLength) {
+    gameIsOver = true;
+  }
+}
+
 function CollisionDetection(obstacle) {
   //Character's top and bottom Hitboxes
   let upperHitBox = characterPosY - characterHitBoxWidth;
@@ -86,6 +94,11 @@ function drawCanvas(startTime) {
   //Draw the clock
   clock.Draw(ctx, startTime);
 
+  //Draw the Score
+  ctx.font = "20px Georgia";
+  ctx.strokeStyle = "black";
+  ctx.strokeText("Your Score: " + score, screenLength - 200, 50);
+
   //Draw assets
   for (let i = 0; i < obstacles.length; i++) {
     // Move obstacle to the left
@@ -99,6 +112,7 @@ function drawCanvas(startTime) {
       obstacles[0].x + pipeWidth < characterPosX - characterHitBoxWidth
     ) {
       obstacles.shift();
+      score += pipePoints;
     }
 
     //Check for collision
@@ -118,6 +132,7 @@ function Init() {
   characterPosY = 200;
   velocity = 0;
   gameIsOver = false;
+  score = 0;
   // Start timer
   const startTime = new Date();
 
@@ -128,6 +143,7 @@ function Init() {
   gameLoopInterval = setInterval(() => {
     if (!gameIsOver) {
       drawCanvas(startTime);
+      OffLimitsDetection();
     } else {
       clearInterval(gameLoopInterval);
     }
