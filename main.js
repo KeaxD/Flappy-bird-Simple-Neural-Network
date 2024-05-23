@@ -1,10 +1,10 @@
 import * as character from "./character.js";
 import * as clock from "./clock.js";
+import { Obstacle } from "./obstacle.js";
 
 // Access the canvas element using its ID
 const canvas = document.getElementById("myCanvas");
 
-const pipeWidth = 100;
 // Get the 2D drawing context from the canvas
 const ctx = canvas.getContext("2d");
 
@@ -21,44 +21,6 @@ let gameIsOver = false;
 let gameLoopInterval;
 let obstacleGenerationInterval;
 let score;
-let pipePoints = 10;
-
-//=======Functions=======
-
-// Draw a bottom pipe
-function DrawBottomPipe(posX, posY) {
-  ctx.strokeStyle = "yellow";
-  ctx.strokeRect(posX, screenLength - posY, pipeWidth, screenLength);
-}
-
-// Draw a top pipe
-function DrawTopPipe(posX, height) {
-  ctx.strokeStyle = "yellow";
-  ctx.strokeRect(posX, 0, pipeWidth, height);
-}
-
-// Use both functions to draw an obstacle
-function DrawObstacle(posX, heightVariance) {
-  //make the bottom pipe the height variance
-  const bottomPipeHeight = heightVariance;
-  //Make the top pipe fill up the space left
-  const topPipeHeight = screenLength - bottomPipeHeight - gapHeight;
-  //Draw both pipe
-  DrawBottomPipe(posX, bottomPipeHeight);
-  DrawTopPipe(posX, topPipeHeight);
-}
-
-function GenerateObstacle() {
-  //Get a random pipe height with a max height and a minimum of 40pixels
-  const maxPipeHeight = screenLength - gapHeight - 40;
-  const randHeight = Math.random() * maxPipeHeight + 80;
-
-  //Push those variables in an array
-  obstacles.push({
-    x: screenLength,
-    heightVariance: randHeight,
-  });
-}
 
 function Jump() {
   characterPosY = +gapHeight;
@@ -70,18 +32,12 @@ function OffLimitsDetection() {
   }
 }
 
-function CollisionDetection(obstacle) {
-  //Character's top and bottom Hitboxes
-  let upperHitBox = characterPosY - characterHitBoxWidth;
-  let lowerHitBox = characterPosY + characterHitBoxWidth;
-  if (
-    characterPosX + characterHitBoxWidth >= obstacle.x &&
-    (lowerHitBox >= screenLength - obstacle.heightVariance ||
-      upperHitBox <= screenLength - obstacle.heightVariance - gapHeight)
-  ) {
-    gameIsOver = true;
-  }
+//Draw assets
+function GenerateObstacle() {
+  const newObstacle = new Obstacle(screenLength, gapHeight);
+  obstacles.push(newObstacle);
 }
+
 //==========================================
 
 function drawCanvas(startTime) {
@@ -99,30 +55,40 @@ function drawCanvas(startTime) {
   ctx.strokeStyle = "black";
   ctx.strokeText("Your Score: " + score, screenLength - 200, 50);
 
-  //Draw assets
-  for (let i = 0; i < obstacles.length; i++) {
-    // Move obstacle to the left
-    obstacles[i].x -= 2;
-    // Draw the obstacle at its new position
-    DrawObstacle(obstacles[i].x, obstacles[i].heightVariance);
-
-    //Clean up Obstacles as soon as it passes the bird's X coordinates
-    if (
-      obstacles.length > 0 &&
-      obstacles[0].x + pipeWidth < characterPosX - characterHitBoxWidth
-    ) {
-      obstacles.shift();
-      score += pipePoints;
-    }
-
-    //Check for collision
-    CollisionDetection(obstacles[i]);
-  }
-
   //Make the character fall with gravity and velocity
   velocity += gravity;
   characterPosY += velocity;
+
+  //Draw Assets
+  //Draw the character
   character.Draw(ctx, characterPosX, characterPosY, characterHitBoxWidth);
+
+  //Draw Obstacles
+  obstacles.forEach((obstacle, i) => {
+    obstacle.update();
+    obstacle.draw(ctx);
+
+    // Remove obstacles that have moved off screen and add score
+    if (obstacle.x + obstacle.pipeWidth < 0) {
+      // Remove the object from the array
+      obstacles.splice(i, 1);
+
+      //Add to the score
+      score += obstacle.score(characterPosX, characterHitBoxWidth);
+    }
+
+    if (
+      obstacle.checkCollision(
+        characterPosX,
+        characterPosY,
+        characterHitBoxWidth
+      )
+    ) {
+      gameIsOver = true;
+    }
+  });
+
+  //Draw the sensors
 }
 
 function Init() {
@@ -150,7 +116,9 @@ function Init() {
   }, 10);
 
   obstacleGenerationInterval = setInterval(() => {
-    GenerateObstacle();
+    if (!gameIsOver) {
+      GenerateObstacle();
+    }
   }, obstacleInterval);
 }
 
