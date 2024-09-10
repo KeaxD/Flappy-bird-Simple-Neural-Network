@@ -1,68 +1,81 @@
 export class Obstacle {
-  constructor(screenLength, gapHeight) {
-    this.screenLength = screenLength;
-    this.pipeWidth = 100;
-    this.gapHeight = gapHeight;
-    this.heightVariance = this.getRandomHeight();
+  constructor(screenLength, characterHitBoxWidth, pipeWidth) {
+    this.pipeWidth = pipeWidth;
     this.x = screenLength;
     this.points = 10;
+    this.borders = [];
+    this.screenLength = screenLength;
+
+    const gapFactor = 10;
+    this.gapheight = characterHitBoxWidth * gapFactor; //This should be the character's hitbox width + gap
+
+    this.GeneratePipes();
   }
 
-  //=======Functions=======
+  GeneratePipes() {
+    //Randomly check if we do 2 pipes or 1 pipe
+    const twoPipes = Math.random() < 0.5;
 
-  getRandomHeight() {
-    //Get a random pipe height with a max height and a minimum of 80pixels
-    const maxPipeHeight = this.screenLength - this.gapHeight - 80;
-    const height = Math.random() * maxPipeHeight + 80;
-    return height;
+    //Get a random height depending on the screenLength and the gapHeight
+    const topPipeY = Math.random() * (this.screenLength - this.gapheight);
+    const bottomPipeY = topPipeY + this.gapheight;
+    const pipeX = this.x;
+
+    const topPipeTopLeft = { x: pipeX, y: 0 };
+    const topPipeBottomRight = { x: pipeX + this.pipeWidth, y: topPipeY };
+    const bottomPipeTopLeft = { x: pipeX, y: bottomPipeY };
+    const bottomPipeBottomRight = {
+      x: pipeX + this.pipeWidth,
+      y: bottomPipeY + bottomPipeY,
+    };
+
+    if (twoPipes) {
+      this.borders = [
+        [topPipeTopLeft, topPipeBottomRight],
+        [bottomPipeTopLeft, bottomPipeBottomRight],
+      ];
+    } else {
+      //Randomly check if we do top pipe or bottom pipe
+      const topPipe = Math.random() < 0.5;
+
+      if (topPipe) {
+        this.borders = [[topPipeTopLeft, topPipeBottomRight]];
+      } else {
+        this.borders = [[bottomPipeTopLeft, bottomPipeBottomRight]];
+      }
+    }
+
+    console.log(this.borders);
   }
 
-  // Use both functions to draw an obstacle
-  draw(ctx) {
-    //make the bottom pipe the height variance
-    const bottomPipeHeight = this.heightVariance;
-
-    //Make the top pipe fill up the space left
-    const topPipeHeight = this.screenLength - bottomPipeHeight - this.gapHeight;
-
-    // Draw a top pipe
-    ctx.beginPath();
+  Draw(ctx) {
+    ctx.lineWidth = 2;
     ctx.strokeStyle = "yellow";
-    ctx.strokeRect(this.x, 0, this.pipeWidth, topPipeHeight);
 
-    // Draw a bottom pipe
-    ctx.beginPath();
-    ctx.strokeRect(
-      this.x,
-      this.screenLength - bottomPipeHeight,
-      this.pipeWidth,
-      this.screenLength
-    );
+    this.borders.forEach((border) => {
+      const [topLeft, bottomRight] = border;
+      ctx.strokeRect(topLeft.x, topLeft.y, this.pipeWidth, bottomRight.y);
+    });
   }
 
   // Method to update the position of the obstacle
-  update() {
+  Update() {
     this.x -= 2; // Move obstacle to the left
-  }
 
-  checkCollision(characterPosX, characterPosY, characterHitBoxWidth) {
-    //Character's top and bottom Hitboxes
-    let upperHitBox = characterPosY - characterHitBoxWidth;
-    let lowerHitBox = characterPosY + characterHitBoxWidth;
-    if (
-      characterPosX + characterHitBoxWidth >= this.x &&
-      characterPosX - characterHitBoxWidth < this.x + this.pipeWidth &&
-      (lowerHitBox >= this.screenLength - this.heightVariance ||
-        upperHitBox <= this.screenLength - this.heightVariance - this.gapHeight)
-    ) {
-      return true;
-    }
-    return false;
+    // Update the positions of the borders
+    this.borders.forEach((border) => {
+      border[0].x = this.x;
+      border[1].x = this.x + this.pipeWidth;
+    });
   }
 
   score(characterPosX, characterHitBoxWidth) {
     if (characterPosX - characterHitBoxWidth > this.x + this.pipeWidth) {
       return this.points;
     }
+  }
+
+  isOffScreen() {
+    return this.x + this.pipeWidth < 0;
   }
 }
