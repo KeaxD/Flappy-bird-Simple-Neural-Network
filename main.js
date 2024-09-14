@@ -35,29 +35,30 @@ setInterval(() => {
 }, obstacleInterval);
 
 function animate() {
-  //Redraw the Canvas
-  canvas.height = 600;
-  canvas.width = 600;
-  ctx.strokeRect(0, 0, screenLength, screenLength);
+  if (!character.damaged) {
+    //Redraw the Canvas
+    canvas.height = 600;
+    canvas.width = 600;
+    ctx.strokeRect(0, 0, screenLength, screenLength);
 
-  // Update and draw each obstacle
-  for (let i = obstacles.length - 1; i >= 0; i--) {
-    const obstacle = obstacles[i];
-    obstacle.Update();
-    obstacle.Draw(ctx);
+    // Update and draw each obstacle
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+      const obstacle = obstacles[i];
+      obstacle.Update();
+      obstacle.Draw(ctx);
 
-    // Remove off-screen obstacles
-    if (obstacle.isOffScreen()) {
-      obstacles.splice(i, 1);
+      // Remove off-screen obstacles
+      if (obstacle.isOffScreen()) {
+        obstacles.splice(i, 1);
+      }
     }
+
+    //Update the character position
+    character.Update(obstacles, screenLength);
+
+    //Draw Assets
+    character.Draw(ctx);
   }
-
-  //Update the character position
-  character.Update(obstacles);
-
-  //Draw Assets
-
-  character.Draw(ctx);
   requestAnimationFrame(animate);
 }
 

@@ -64,7 +64,6 @@ export class Obstacle {
 
     this.borders.forEach((border) => {
       const [left, right, side] = border;
-      console.log(border);
       ctx.beginPath();
       ctx.moveTo(left.x, left.y);
       ctx.lineTo(right.x, right.y);
@@ -83,7 +82,6 @@ export class Obstacle {
       border[0].x -= 2;
       border[1].x -= 2;
       border[2].x -= 2;
-      console.log(border);
     });
   }
 
