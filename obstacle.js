@@ -69,6 +69,7 @@ export class Obstacle {
       ctx.moveTo(left.x, left.y);
       ctx.lineTo(right.x, right.y);
       ctx.lineTo(side.x, side.y);
+      ctx.lineTo(left.x + this.pipeWidth, left.y);
       ctx.stroke();
     });
   }
