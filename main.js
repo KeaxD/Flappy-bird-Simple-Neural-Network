@@ -26,9 +26,10 @@ const character = new Character(
   characterHitBoxWidth
 );
 
-//Instantiate Obstacles
 const obstacle = new Obstacle(screenLength, characterHitBoxWidth, pipeWidth);
+obstacles.push(obstacle);
 
+//Instantiate Obstacles at a regular interval
 setInterval(() => {
   obstacles.push(new Obstacle(screenLength, characterHitBoxWidth, pipeWidth));
 }, obstacleInterval);
@@ -38,9 +39,6 @@ function animate() {
   canvas.height = 600;
   canvas.width = 600;
   ctx.strokeRect(0, 0, screenLength, screenLength);
-
-  //Update the character position
-  character.Update();
 
   // Update and draw each obstacle
   for (let i = obstacles.length - 1; i >= 0; i--) {
@@ -53,6 +51,9 @@ function animate() {
       obstacles.splice(i, 1);
     }
   }
+
+  //Update the character position
+  character.Update(obstacles);
 
   //Draw Assets
 

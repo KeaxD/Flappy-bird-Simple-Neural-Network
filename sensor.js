@@ -6,6 +6,7 @@ export class Sensor {
     this.raySpread = Math.PI;
 
     this.rays = [];
+    this.readings = [];
   }
 
   lerp(A, B, t) {
@@ -31,8 +32,12 @@ export class Sensor {
     return null;
   }
 
-  update() {
+  update(obstaclesArray) {
     this.#drawSensors();
+    this.readings = [];
+    for (let i = 0; i < this.rays.length; i++) {
+      this.readings.push(this.#getReading(this.rays[i], obstaclesArray));
+    }
   }
 
   #drawSensors() {
@@ -53,13 +58,49 @@ export class Sensor {
     }
   }
 
+  #getReading(ray, obstacleArray) {
+    let touches = [];
+    for (let i = 0; i < obstacleArray.length; i++) {
+      const borders = obstacleArray[i].borders;
+      for (let j = 0; j < borders.length; j++) {
+        const [C, D, E] = borders[j];
+        const touchSide = this.getIntersection(ray[0], ray[1], C, D);
+        const touchTop = this.getIntersection(ray[0], ray[1], D, E);
+        if (touchSide) {
+          touches.push(touchSide);
+        }
+        if (touchTop) {
+          touches.push(touchTop);
+        }
+      }
+    }
+    if (touches.length == 0) {
+      return null;
+    } else {
+      const offsets = touches.map((e) => e.offset);
+      const minOffset = Math.min(...offsets);
+      return touches.find((e) => e.offset == minOffset);
+    }
+  }
+
   draw(ctx) {
     for (let i = 0; i < this.rayCount; i++) {
+      let end = this.rays[i][1];
+      if (this.readings[i]) {
+        end = this.readings[i];
+      }
       ctx.beginPath();
       ctx.lineWidth = 2;
       ctx.strokeStyle = "yellow";
       ctx.moveTo(this.rays[i][0].x, this.rays[i][0].y);
-      ctx.lineTo(this.rays[i][1].x, this.rays[i][1].y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "red";
+      ctx.moveTo(this.rays[i][1].x, this.rays[i][1].y);
+      ctx.lineTo(end.x, end.y);
       ctx.stroke();
     }
   }

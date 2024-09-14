@@ -28,11 +28,11 @@ export class Character {
     });
   }
 
-  Update() {
+  Update(obstaclesArray) {
     //Make the character fall with gravity and velocity
     this.velocity += this.gravity;
     this.y += this.velocity;
+    this.sensor.update(obstaclesArray);
     this.Jump();
-    this.sensor.update();
   }
 }

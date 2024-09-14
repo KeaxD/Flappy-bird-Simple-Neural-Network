@@ -22,30 +22,40 @@ export class Obstacle {
     const pipeX = this.x;
 
     const topPipeTopLeft = { x: pipeX, y: 0 };
+    const topPipeTopRight = { x: pipeX + this.pipeWidth, y: 0 };
+    const topPipeBottomLeft = { x: pipeX, y: topPipeY };
     const topPipeBottomRight = { x: pipeX + this.pipeWidth, y: topPipeY };
+
     const bottomPipeTopLeft = { x: pipeX, y: bottomPipeY };
+    const bottomPipeTopRight = { x: pipeX + this.pipeWidth, y: bottomPipeY };
+    const bottomPipeBottomLeft = {
+      x: pipeX,
+      y: this.screenLength,
+    };
     const bottomPipeBottomRight = {
       x: pipeX + this.pipeWidth,
-      y: bottomPipeY + bottomPipeY,
+      y: this.screenLength,
     };
 
     if (twoPipes) {
       this.borders = [
-        [topPipeTopLeft, topPipeBottomRight],
-        [bottomPipeTopLeft, bottomPipeBottomRight],
+        [topPipeTopLeft, topPipeBottomLeft, topPipeBottomRight],
+        [bottomPipeBottomLeft, bottomPipeTopLeft, bottomPipeTopRight],
       ];
     } else {
       //Randomly check if we do top pipe or bottom pipe
       const topPipe = Math.random() < 0.5;
 
       if (topPipe) {
-        this.borders = [[topPipeTopLeft, topPipeBottomRight]];
+        this.borders = [
+          [topPipeTopLeft, topPipeBottomLeft, topPipeBottomRight],
+        ];
       } else {
-        this.borders = [[bottomPipeTopLeft, bottomPipeBottomRight]];
+        this.borders = [
+          [bottomPipeBottomLeft, bottomPipeTopLeft, bottomPipeTopRight],
+        ];
       }
     }
-
-    console.log(this.borders);
   }
 
   Draw(ctx) {
@@ -53,19 +63,26 @@ export class Obstacle {
     ctx.strokeStyle = "yellow";
 
     this.borders.forEach((border) => {
-      const [topLeft, bottomRight] = border;
-      ctx.strokeRect(topLeft.x, topLeft.y, this.pipeWidth, bottomRight.y);
+      const [left, right, side] = border;
+      console.log(border);
+      ctx.beginPath();
+      ctx.moveTo(left.x, left.y);
+      ctx.lineTo(right.x, right.y);
+      ctx.lineTo(side.x, side.y);
+      ctx.stroke();
     });
   }
 
   // Method to update the position of the obstacle
-  Update() {
+  Update(obstaclesArray) {
     this.x -= 2; // Move obstacle to the left
 
     // Update the positions of the borders
     this.borders.forEach((border) => {
-      border[0].x = this.x;
-      border[1].x = this.x + this.pipeWidth;
+      border[0].x -= 2;
+      border[1].x -= 2;
+      border[2].x -= 2;
+      console.log(border);
     });
   }
 
