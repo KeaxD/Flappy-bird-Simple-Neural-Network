@@ -22,7 +22,6 @@ export class Obstacle {
     const pipeX = this.x;
 
     const topPipeTopLeft = { x: pipeX, y: 0 };
-    const topPipeTopRight = { x: pipeX + this.pipeWidth, y: 0 };
     const topPipeBottomLeft = { x: pipeX, y: topPipeY };
     const topPipeBottomRight = { x: pipeX + this.pipeWidth, y: topPipeY };
 
@@ -74,7 +73,7 @@ export class Obstacle {
   }
 
   // Method to update the position of the obstacle
-  Update(obstaclesArray) {
+  Update() {
     this.x -= 2; // Move obstacle to the left
 
     // Update the positions of the borders
@@ -85,10 +84,12 @@ export class Obstacle {
     });
   }
 
-  score(characterPosX, characterHitBoxWidth) {
-    if (characterPosX - characterHitBoxWidth > this.x + this.pipeWidth) {
+  score(characterPosX) {
+    if (!this.passed && characterPosX > this.x + this.pipeWidth) {
+      this.passed = true;
       return this.points;
     }
+    return 0;
   }
 
   isOffScreen() {

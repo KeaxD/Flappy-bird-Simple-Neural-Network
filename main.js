@@ -2,14 +2,22 @@ import { Character } from "./character.js";
 import { Obstacle } from "./obstacle.js";
 
 // Access the canvas element using its ID
-const canvas = document.getElementById("myCanvas");
-canvas.height = 600;
-canvas.width = 600;
+const Gamecanvas = document.getElementById("myCanvas");
+Gamecanvas.height = 600;
+Gamecanvas.width = 600;
 // Get the 2D drawing context from the canvas
-const ctx = canvas.getContext("2d");
-const screenLength = canvas.height;
+const ctx = Gamecanvas.getContext("2d");
+const screenLength = Gamecanvas.height;
+
+//Access the network canvas
+const networkCanvas = document.getElementById("networkCanvas");
+networkCanvas.height = 600;
+networkCanvas.width = 600;
+
+const netctx = networkCanvas.getContext("2d");
 
 let obstacles = [];
+let score = 0;
 
 // Draw a hollow rectangle that takes the entire canvas
 
@@ -51,6 +59,9 @@ function resetGame() {
   // Clear obstacles
   obstacles = [];
 
+  //Reset score
+  score = 0;
+
   // Reset obstacle interval
   clearInterval(obstacleTimer);
 
@@ -62,8 +73,8 @@ function resetGame() {
 function animate() {
   if (!character.damaged) {
     //Redraw the Canvas
-    canvas.height = 600;
-    canvas.width = 600;
+    Gamecanvas.height = 600;
+    Gamecanvas.width = 600;
     ctx.strokeRect(0, 0, screenLength, screenLength);
 
     // Update and draw each obstacle
@@ -72,6 +83,8 @@ function animate() {
       obstacle.Update();
       obstacle.Draw(ctx);
 
+      //Count Score
+      score += obstacle.score(character.x);
       // Remove off-screen obstacles
       if (obstacle.isOffScreen()) {
         obstacles.splice(i, 1);
@@ -83,6 +96,11 @@ function animate() {
 
     //Draw Assets
     character.Draw(ctx);
+
+    // Draw Score
+    ctx.fillStyle = "black";
+    ctx.font = "24px Arial";
+    ctx.fillText(`Score: ${score}`, 10, 30);
   }
   requestAnimationFrame(animate);
 }

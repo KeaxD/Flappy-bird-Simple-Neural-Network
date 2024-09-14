@@ -1,0 +1,12 @@
+body {
+  display: flex;
+}
+
+#myCanvas {
+  background-color: rgb(252, 252, 252);
+  margin: 1rem;
+}
+
+#networkCanvas {
+  background-color: grey;
+}

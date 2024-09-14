@@ -32,11 +32,13 @@ export class Sensor {
     return null;
   }
 
-  update(obstaclesArray) {
+  update(obstaclesArray, screenLength) {
     this.#drawSensors();
     this.readings = [];
     for (let i = 0; i < this.rays.length; i++) {
-      this.readings.push(this.#getReading(this.rays[i], obstaclesArray));
+      this.readings.push(
+        this.#getReading(this.rays[i], obstaclesArray, screenLength)
+      );
     }
   }
 
@@ -58,7 +60,7 @@ export class Sensor {
     }
   }
 
-  #getReading(ray, obstacleArray) {
+  #getReading(ray, obstacleArray, screenLength) {
     let touches = [];
     for (let i = 0; i < obstacleArray.length; i++) {
       const borders = obstacleArray[i].borders;
@@ -74,6 +76,35 @@ export class Sensor {
         }
       }
     }
+    //Ceiling and floor Lines
+    const upperBound = [
+      { x: 0, y: 0 },
+      { x: screenLength, y: 0 },
+    ];
+    const lowerBound = [
+      { x: 0, y: screenLength },
+      { x: screenLength, y: screenLength },
+    ];
+
+    const upperTouch = this.getIntersection(
+      ray[0],
+      ray[1],
+      upperBound[0],
+      upperBound[1]
+    );
+    const lowerTouch = this.getIntersection(
+      ray[0],
+      ray[1],
+      lowerBound[0],
+      lowerBound[1]
+    );
+    if (upperTouch) {
+      touches.push(upperTouch);
+    }
+    if (lowerTouch) {
+      touches.push(lowerTouch);
+    }
+
     if (touches.length == 0) {
       return null;
     } else {

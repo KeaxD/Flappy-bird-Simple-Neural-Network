@@ -1,5 +1,5 @@
 import { Sensor } from "./sensor.js";
-
+import { NeuralNetwork } from "./network.js";
 export class Character {
   constructor(x, y, width) {
     this.x = x;
@@ -9,8 +9,10 @@ export class Character {
     this.velocity = 0.2;
     this.gravity = 0.1;
 
-    this.sensor = new Sensor(this);
     this.damaged = false;
+
+    this.sensor = new Sensor(this);
+    this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 1]);
   }
 
   Draw(ctx) {
@@ -27,20 +29,37 @@ export class Character {
     this.sensor.draw(ctx);
   }
 
-  Jump() {
-    document.addEventListener("keydown", (e) => {
-      this.velocity = -5;
-    });
-  }
+  // Jump() {
+  //   document.addEventListener("keydown", (e) => {
+  //     this.velocity = -5;
+  //   });
+  // }
 
   Update(obstaclesArray, screenLength) {
     //Make the character fall with gravity and velocity
     this.velocity += this.gravity;
     this.y += this.velocity;
-    this.sensor.update(obstaclesArray);
+
+    // Update sensor readings
+    this.sensor.update(obstaclesArray, screenLength);
     this.damaged =
       this.#assessDamage(obstaclesArray) || this.#outOfBounds(screenLength);
-    this.Jump();
+
+    // Get inputs from sensors
+    const offsets = this.sensor.readings.map((s) =>
+      s == null ? 0 : 1 - s.offset
+    );
+    console.log(offsets);
+
+    // Get outputs from neural network
+    const outputs = NeuralNetwork.feedForward(offsets, this.brain);
+    console.log(outputs);
+
+    // Use single output neuron to decide action (e.g., jump)
+    if (outputs[0] > 0.5) {
+      // Perform jump action
+      this.velocity = -5;
+    }
   }
 
   #outOfBounds(screenLength) {
@@ -52,7 +71,6 @@ export class Character {
       { x: 0, y: screenLength },
       { x: screenLength, y: screenLength },
     ];
-    console.log();
     const upperBoundTouch = this.lineIntersectsCircle(
       upperBound[0],
       upperBound[1],
