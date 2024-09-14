@@ -9,7 +9,7 @@ canvas.width = 600;
 const ctx = canvas.getContext("2d");
 const screenLength = canvas.height;
 
-const obstacles = [];
+let obstacles = [];
 
 // Draw a hollow rectangle that takes the entire canvas
 
@@ -20,7 +20,7 @@ const pipeWidth = 100;
 const obstacleInterval = 2000;
 
 //Instantiate character
-const character = new Character(
+let character = new Character(
   characterPosX,
   characterPosY,
   characterHitBoxWidth
@@ -30,9 +30,34 @@ const obstacle = new Obstacle(screenLength, characterHitBoxWidth, pipeWidth);
 obstacles.push(obstacle);
 
 //Instantiate Obstacles at a regular interval
-setInterval(() => {
+let obstacleTimer = setInterval(() => {
   obstacles.push(new Obstacle(screenLength, characterHitBoxWidth, pipeWidth));
 }, obstacleInterval);
+
+function handleRestartEvent(event) {
+  if (event.key === "r" || event.key === "R") {
+    resetGame(); // Call the reset function when "R" is pressed
+  }
+}
+
+// Add the event listener to the document
+document.addEventListener("keydown", handleRestartEvent);
+
+// Function to reset the game
+function resetGame() {
+  // Reset character
+  character = new Character(characterPosX, characterPosY, characterHitBoxWidth);
+
+  // Clear obstacles
+  obstacles = [];
+
+  // Reset obstacle interval
+  clearInterval(obstacleTimer);
+
+  obstacleTimer = setInterval(() => {
+    obstacles.push(new Obstacle(screenLength, characterHitBoxWidth, pipeWidth));
+  }, obstacleInterval);
+}
 
 function animate() {
   if (!character.damaged) {
