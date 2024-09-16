@@ -38,12 +38,9 @@ class Level {
     for (let i = 0; i < level.biases.length; i++) {
       level.biases[i] = Math.random() * 2 - 1;
     }
-    console.log("BIASES : ", level.biases);
-    console.log("WEIGHTS : ", level.weights);
   }
 
   static feedForward(givenInputs, level) {
-    console.log(givenInputs);
     for (let i = 0; i < level.inputs.length; i++) {
       level.inputs[i] = givenInputs[i];
     }

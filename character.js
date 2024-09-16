@@ -36,14 +36,16 @@ export class Character {
   // }
 
   Update(obstaclesArray, screenLength) {
-    //Make the character fall with gravity and velocity
-    this.velocity += this.gravity;
-    this.y += this.velocity;
+    if (!this.damaged) {
+      //Make the character fall with gravity and velocity
+      this.velocity += this.gravity;
+      this.y += this.velocity;
 
-    // Update sensor readings
-    this.sensor.update(obstaclesArray, screenLength);
-    this.damaged =
-      this.#assessDamage(obstaclesArray) || this.#outOfBounds(screenLength);
+      // Update sensor readings
+      this.sensor.update(obstaclesArray, screenLength);
+      this.damaged =
+        this.#assessDamage(obstaclesArray) || this.#outOfBounds(screenLength);
+    }
 
     // Get inputs from sensors
     const offsets = this.sensor.readings.map((s) =>

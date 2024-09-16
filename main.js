@@ -29,11 +29,8 @@ const pipeWidth = 100;
 const obstacleInterval = 2000;
 
 //Instantiate character
-let character = new Character(
-  characterPosX,
-  characterPosY,
-  characterHitBoxWidth
-);
+const N = 20;
+let birds = generateBirds(N);
 
 const obstacle = new Obstacle(screenLength, characterHitBoxWidth, pipeWidth);
 obstacles.push(obstacle);
@@ -55,7 +52,7 @@ document.addEventListener("keydown", handleRestartEvent);
 // Function to reset the game
 function resetGame() {
   // Reset character
-  character = new Character(characterPosX, characterPosY, characterHitBoxWidth);
+  birds = generateBirds(N);
 
   // Clear obstacles
   obstacles = [];
@@ -71,8 +68,20 @@ function resetGame() {
   }, obstacleInterval);
 }
 
+function generateBirds(N) {
+  const birds = [];
+  for (let i = 1; i <= N; i++) {
+    birds.push(
+      new Character(characterPosX, characterPosY, characterHitBoxWidth)
+    );
+  }
+  return birds;
+}
+
 function animate() {
-  if (!character.damaged) {
+  const allDamaged = birds.every((character) => character.damaged);
+
+  if (!allDamaged) {
     //Redraw the Canvas
     Gamecanvas.height = 600;
     Gamecanvas.width = 600;
@@ -85,7 +94,7 @@ function animate() {
       obstacle.Draw(ctx);
 
       //Count Score
-      score += obstacle.score(character.x);
+      score += obstacle.score(birds[0].x);
       // Remove off-screen obstacles
       if (obstacle.isOffScreen()) {
         obstacles.splice(i, 1);
@@ -93,18 +102,23 @@ function animate() {
     }
 
     //Update the character position
-    character.Update(obstacles, screenLength);
+    for (let i = 0; i < birds.length; i++) {
+      birds[i].Update(obstacles, screenLength);
+    }
 
     //Draw Assets
-    character.Draw(ctx);
+    for (let i = 0; i < birds.length; i++) {
+      birds[i].Draw(ctx);
+    }
 
     // Draw Score
     ctx.fillStyle = "black";
     ctx.font = "24px Arial";
     ctx.fillText(`Score: ${score}`, 10, 30);
-
-    Visualizer.drawNetwork(netctx, character.brain);
   }
+
+  Visualizer.drawNetwork(netctx, birds[0].brain);
+
   requestAnimationFrame(animate);
 }
 
