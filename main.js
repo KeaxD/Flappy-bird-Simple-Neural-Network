@@ -32,6 +32,13 @@ const obstacleInterval = 2000;
 const N = 20;
 let birds = generateBirds(N);
 
+let bestBird = birds[0]; //default to the first one
+
+//If saved in local storage, get that brain
+if (localStorage.getItem("bestBrain")) {
+  bestBird.brain = JSON.parse(localStorage.getItem("bestBrain"));
+}
+
 const obstacle = new Obstacle(screenLength, characterHitBoxWidth, pipeWidth);
 obstacles.push(obstacle);
 
@@ -78,7 +85,21 @@ function generateBirds(N) {
   return birds;
 }
 
+function save() {
+  localStorage.setItem("bestBrain", JSON.stringify(bestBird.brain));
+  console.log("Successfuly saved :", bestBird.brain);
+}
+
+function discard() {
+  localStorage.removeItem("bestBrain");
+}
+
 function animate() {
+  //Find the best brain
+  bestBird = birds.find(
+    (c) => c.score == Math.max(...birds.map((c) => c.score))
+  );
+
   const allDamaged = birds.every((character) => character.damaged);
 
   if (!allDamaged) {
@@ -106,7 +127,7 @@ function animate() {
       birds[i].Update(obstacles, screenLength);
     }
 
-    //Draw Assets
+    //Draw characters
     for (let i = 0; i < birds.length; i++) {
       birds[i].Draw(ctx);
     }
@@ -117,9 +138,12 @@ function animate() {
     ctx.fillText(`Score: ${score}`, 10, 30);
   }
 
-  Visualizer.drawNetwork(netctx, birds[0].brain);
+  Visualizer.drawNetwork(netctx, bestBird.brain);
 
   requestAnimationFrame(animate);
 }
 
 requestAnimationFrame(animate);
+
+window.save = save;
+window.discard = discard;

@@ -10,3 +10,19 @@ body {
 #networkCanvas {
   background-color: black;
 }
+
+#btns {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#btns button {
+  margin-top: 1rem;
+  padding: 0.5rem;
+}
+
+#btns button:hover {
+  cursor: pointer;
+  background-color: blue;
+}

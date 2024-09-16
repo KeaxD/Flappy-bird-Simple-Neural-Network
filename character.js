@@ -10,6 +10,7 @@ export class Character {
     this.gravity = 0.1;
 
     this.damaged = false;
+    this.score = 0;
 
     this.sensor = new Sensor(this);
     this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 1]);
@@ -45,6 +46,12 @@ export class Character {
       this.sensor.update(obstaclesArray, screenLength);
       this.damaged =
         this.#assessDamage(obstaclesArray) || this.#outOfBounds(screenLength);
+
+      // Update Score
+      for (let i = 0; i < obstaclesArray.length; i++) {
+        const obstacle = obstaclesArray[i];
+        this.score += obstacle.score(this.x);
+      }
     }
 
     // Get inputs from sensors
