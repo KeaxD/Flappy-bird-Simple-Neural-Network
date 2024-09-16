@@ -49,11 +49,9 @@ export class Character {
     const offsets = this.sensor.readings.map((s) =>
       s == null ? 0 : 1 - s.offset
     );
-    console.log(offsets);
 
     // Get outputs from neural network
     const outputs = NeuralNetwork.feedForward(offsets, this.brain);
-    console.log(outputs);
 
     // Use single output neuron to decide action (e.g., jump)
     if (outputs[0] > 0.5) {

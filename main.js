@@ -1,5 +1,6 @@
 import { Character } from "./character.js";
 import { Obstacle } from "./obstacle.js";
+import { Visualizer } from "./Visualizer.js";
 
 // Access the canvas element using its ID
 const Gamecanvas = document.getElementById("myCanvas");
@@ -101,6 +102,8 @@ function animate() {
     ctx.fillStyle = "black";
     ctx.font = "24px Arial";
     ctx.fillText(`Score: ${score}`, 10, 30);
+
+    Visualizer.drawNetwork(netctx, character.brain);
   }
   requestAnimationFrame(animate);
 }
