@@ -1,4 +1,5 @@
 import { Character } from "./character.js";
+import { NeuralNetwork } from "./network.js";
 import { Obstacle } from "./obstacle.js";
 import { Visualizer } from "./Visualizer.js";
 
@@ -36,7 +37,12 @@ let bestBird = birds[0]; //default to the first one
 
 //If saved in local storage, get that brain
 if (localStorage.getItem("bestBrain")) {
-  bestBird.brain = JSON.parse(localStorage.getItem("bestBrain"));
+  for (let i = 0; i < birds.length; i++) {
+    birds[i].brain = JSON.parse(localStorage.getItem("bestBrain"));
+    if (i != 0) {
+      NeuralNetwork.mutate(birds[i].brain, 0.01);
+    }
+  }
 }
 
 const obstacle = new Obstacle(screenLength, characterHitBoxWidth, pipeWidth);
