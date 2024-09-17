@@ -14,7 +14,7 @@ export class Obstacle {
 
   GeneratePipes() {
     //Randomly check if we do 2 pipes or 1 pipe
-    const twoPipes = Math.random() < 0.5;
+    const twoPipes = true;
 
     //Get a random height depending on the screenLength and the gapHeight
     const topPipeY = Math.random() * (this.screenLength - this.gapheight);

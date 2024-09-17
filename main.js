@@ -38,7 +38,7 @@ const obstacleInterval = 2000; // INTERVAL =======================
 
 //==============Instantiate character ===============
 const N = 500;
-const mutationFactor = 0.1;
+let mutationFactor = 0.1;
 let birds = generateBirds(N);
 
 let bestBird = birds[0]; //default to the first one
@@ -50,11 +50,13 @@ let previousBest = 0;
 
 let generation = 0;
 let generationsWithoutImprovement = 0;
-const maxGenerationsWithoutImprovement = 10;
+const maxGenerationsWithoutImprovement = 20;
 
 // Track performance over multiple generations
-const performanceWindow = 5;
+const performanceWindow = 15;
 let performanceHistory = [];
+
+let auto = false;
 
 //If saved in local storage, get that brain
 if (localStorage.getItem("bestBrain")) {
@@ -98,38 +100,43 @@ function resetGame() {
     obstacles.push(new Obstacle(canvasWidth, characterHitBoxWidth, pipeWidth));
   }, obstacleInterval);
 
-  if (previousBest < bestDistance) {
-    previousBest = bestDistance;
-    generationsWithoutImprovement = 0; // Reset counter if improvement is seen
-    generation++;
-  } else {
-    generationsWithoutImprovement++;
-    if (generationsWithoutImprovement >= maxGenerationsWithoutImprovement) {
-      mutationFactor *= 1.1; // Increase mutation factor if no improvement
-      generationsWithoutImprovement = 0; // Reset counter
-    }
-  }
-
-  // Update performance history
-  performanceHistory.push(bestDistance);
-  if (performanceHistory.length > performanceWindow) {
-    performanceHistory.shift(); // Remove oldest performance record
-  }
-
-  // Calculate average performance over the window
-  const averagePerformance =
-    performanceHistory.reduce((sum, value) => sum + value, 0) /
-    performanceHistory.length;
-
-  // Adjust mutation factor based on average performance trend
-  if (performanceHistory.length === performanceWindow) {
-    const performanceTrend =
-      averagePerformance - performanceHistory[performanceHistory.length - 1];
-
-    if (performanceTrend > 0) {
-      mutationFactor *= 0.9; // Decrease mutation factor if performance is improving
+  if (auto) {
+    if (previousBest < bestDistance) {
+      save();
+      previousBest = bestDistance;
+      performanceHistory.length = 0;
+      generationsWithoutImprovement = 0; // Reset counter if improvement is seen
+      mutationFactor = 0.1;
+      generation++;
     } else {
-      mutationFactor *= 1.1; // Increase mutation factor if performance is declining or stagnating
+      generationsWithoutImprovement++;
+      if (generationsWithoutImprovement >= maxGenerationsWithoutImprovement) {
+        // mutationFactor *= 1.1; // Increase mutation factor if no improvement
+        generationsWithoutImprovement = 0; // Reset counter
+      }
+    }
+
+    // Update performance history
+    performanceHistory.push(bestDistance);
+    if (performanceHistory.length > performanceWindow) {
+      performanceHistory.shift(); // Remove oldest performance record
+    }
+
+    // Calculate average performance over the window
+    const averagePerformance =
+      performanceHistory.reduce((sum, value) => sum + value, 0) /
+      performanceHistory.length;
+
+    // Adjust mutation factor based on average performance trend
+    if (performanceHistory.length === performanceWindow) {
+      const performanceTrend =
+        averagePerformance - performanceHistory[performanceHistory.length - 1];
+
+      if (performanceTrend > 0) {
+        mutationFactor *= 0.9; // Decrease mutation factor if performance is improving
+      } else {
+        mutationFactor += 0.05; // Increase mutation factor if performance is declining or stagnating
+      }
     }
   }
 
@@ -148,14 +155,17 @@ function generateBirds(N) {
 
 function save() {
   localStorage.setItem("bestBrain", JSON.stringify(bestBird.brain));
-  resetGame();
   console.log("Successfuly saved :", bestBird.brain);
 }
 
 function discard() {
   localStorage.removeItem("bestBrain");
-  resetGame();
   console.log("Successfuly deleted :", bestBird.brain);
+}
+
+function autoRun() {
+  auto = !auto;
+  console.log(auto);
 }
 
 function animate() {
@@ -220,6 +230,14 @@ function animate() {
       40
     );
     statsctx.fillText(`Mutation Factor: ${mutationFactor}`, 400, 60);
+
+    ctx.fillStyle = "black";
+    ctx.font = "18px Arial";
+    ctx.fillText(`AutoPlay: ${auto ? "On" : "Off"}`, 20, 30);
+  } else {
+    if (auto) {
+      resetGame();
+    }
   }
 
   Visualizer.drawNetwork(netctx, bestBird.brain);
@@ -232,3 +250,4 @@ requestAnimationFrame(animate);
 window.save = save;
 window.discard = discard;
 window.reset = resetGame;
+window.autoRun = autoRun;
