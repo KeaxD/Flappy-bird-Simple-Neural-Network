@@ -11,12 +11,13 @@ export class Character {
 
     this.damaged = false;
     this.score = 0;
+    this.distance = 0;
 
     this.sensor = new Sensor(this);
     this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 1]);
   }
 
-  Draw(ctx) {
+  Draw(ctx, bestBird) {
     //Draw the character
     if (this.damaged) {
       ctx.fillStyle = "gray";
@@ -27,14 +28,10 @@ export class Character {
     ctx.arc(this.x, this.y, this.width, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.fill();
-    this.sensor.draw(ctx);
+    if (!this.damaged && bestBird) {
+      this.sensor.draw(ctx);
+    }
   }
-
-  // Jump() {
-  //   document.addEventListener("keydown", (e) => {
-  //     this.velocity = -5;
-  //   });
-  // }
 
   Update(obstaclesArray, screenLength) {
     if (!this.damaged) {
@@ -47,11 +44,12 @@ export class Character {
       this.damaged =
         this.#assessDamage(obstaclesArray) || this.#outOfBounds(screenLength);
 
-      // Update Score
-      for (let i = 0; i < obstaclesArray.length; i++) {
-        const obstacle = obstaclesArray[i];
-        this.score += obstacle.score(this.x);
-      }
+      //Increment the distance travelled
+      this.distance += 1;
+    }
+
+    if (this.damaged) {
+      this.x -= +2;
     }
 
     // Get inputs from sensors
@@ -150,6 +148,4 @@ export class Character {
 
     return false;
   }
-
-  //console.log(lineIntersectsCircle(x1, y1, x2, y2, cx, cy, r)); // Should return true or false
 }

@@ -2,7 +2,7 @@ export class Sensor {
   constructor(character) {
     this.character = character;
     this.rayCount = 5;
-    this.rayLength = 200;
+    this.rayLength = 450;
     this.raySpread = Math.PI;
 
     this.rays = [];

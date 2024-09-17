@@ -30,17 +30,22 @@ const pipeWidth = 100;
 const obstacleInterval = 2000;
 
 //Instantiate character
-const N = 20;
+const N = 100;
 let birds = generateBirds(N);
 
 let bestBird = birds[0]; //default to the first one
+
+let allDamaged;
+
+let bestDistance = 0;
+let previousBest = 0;
 
 //If saved in local storage, get that brain
 if (localStorage.getItem("bestBrain")) {
   for (let i = 0; i < birds.length; i++) {
     birds[i].brain = JSON.parse(localStorage.getItem("bestBrain"));
     if (i != 0) {
-      NeuralNetwork.mutate(birds[i].brain, 0.01);
+      NeuralNetwork.mutate(birds[i].brain, 0.1);
     }
   }
 }
@@ -79,6 +84,11 @@ function resetGame() {
   obstacleTimer = setInterval(() => {
     obstacles.push(new Obstacle(screenLength, characterHitBoxWidth, pipeWidth));
   }, obstacleInterval);
+
+  if (previousBest < bestDistance) {
+    previousBest = bestDistance;
+  }
+  bestDistance = 0;
 }
 
 function generateBirds(N) {
@@ -93,20 +103,23 @@ function generateBirds(N) {
 
 function save() {
   localStorage.setItem("bestBrain", JSON.stringify(bestBird.brain));
+  resetGame();
   console.log("Successfuly saved :", bestBird.brain);
 }
 
 function discard() {
   localStorage.removeItem("bestBrain");
+  resetGame();
+  console.log("Successfuly deleted :", bestBird.brain);
 }
 
 function animate() {
   //Find the best brain
   bestBird = birds.find(
-    (c) => c.score == Math.max(...birds.map((c) => c.score))
+    (c) => c.distance == Math.max(...birds.map((c) => c.distance))
   );
 
-  const allDamaged = birds.every((character) => character.damaged);
+  allDamaged = birds.every((character) => character.damaged);
 
   if (!allDamaged) {
     //Redraw the Canvas
@@ -120,8 +133,6 @@ function animate() {
       obstacle.Update();
       obstacle.Draw(ctx);
 
-      //Count Score
-      score += obstacle.score(birds[0].x);
       // Remove off-screen obstacles
       if (obstacle.isOffScreen()) {
         obstacles.splice(i, 1);
@@ -135,13 +146,22 @@ function animate() {
 
     //Draw characters
     for (let i = 0; i < birds.length; i++) {
-      birds[i].Draw(ctx);
+      if (birds[i] === bestBird) {
+        birds[i].Draw(ctx, true);
+      } else {
+        birds[i].Draw(ctx);
+      }
     }
+
+    //Best Distance
+    bestDistance = bestBird.distance;
 
     // Draw Score
     ctx.fillStyle = "black";
     ctx.font = "24px Arial";
-    ctx.fillText(`Score: ${score}`, 10, 30);
+    ctx.fillText(`All time Best Distance: ${previousBest}`, 10, 30);
+    ctx.fillText(`Current Best Distance: ${bestDistance}`, 10, 50);
+  } else {
   }
 
   Visualizer.drawNetwork(netctx, bestBird.brain);
@@ -153,3 +173,4 @@ requestAnimationFrame(animate);
 
 window.save = save;
 window.discard = discard;
+window.reset = resetGame;
