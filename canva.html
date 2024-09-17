@@ -5,13 +5,19 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <canvas id="myCanvas"></canvas>
-    <div id="btns">
-      <button onclick="reset()">🔄</button>
-      <button onclick="save()">💾</button>
-      <button onclick="discard()">🗑️</button>
+    <div id="main-container">
+      <canvas id="myCanvas"></canvas>
+      <div id="btns">
+        <button onclick="reset()">🔄</button>
+        <button onclick="save()">💾</button>
+        <button onclick="discard()">🗑️</button>
+      </div>
+      <canvas id="networkCanvas"></canvas>
     </div>
-    <canvas id="networkCanvas"></canvas>
+    <div>
+      <canvas id="stats"></canvas>
+    </div>
+
     <script type="module" src="character.js" ;></script>
     <script type="module" src="main.js"></script>
   </body>

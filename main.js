@@ -3,35 +3,42 @@ import { NeuralNetwork } from "./network.js";
 import { Obstacle } from "./obstacle.js";
 import { Visualizer } from "./Visualizer.js";
 
+//Get the measurements of the screen and apply it to the canvas
+const canvasWidth = Math.floor(window.innerHeight / 1.2);
+
 // Access the canvas element using its ID
 const Gamecanvas = document.getElementById("myCanvas");
-Gamecanvas.height = 600;
-Gamecanvas.width = 600;
+Gamecanvas.height = canvasWidth;
+Gamecanvas.width = canvasWidth;
 // Get the 2D drawing context from the canvas
 const ctx = Gamecanvas.getContext("2d");
-const screenLength = Gamecanvas.height;
 
 //Access the network canvas
 const networkCanvas = document.getElementById("networkCanvas");
-networkCanvas.height = 600;
-networkCanvas.width = 600;
+networkCanvas.height = canvasWidth;
+networkCanvas.width = canvasWidth;
 
 const netctx = networkCanvas.getContext("2d");
 
+//Stats Canvas
+const statsCanvas = document.getElementById("stats");
+statsCanvas.height = canvasWidth;
+statsCanvas.width = canvasWidth;
+const statsctx = statsCanvas.getContext("2d");
+
 let obstacles = [];
-let score = 0;
 
 // Draw a hollow rectangle that takes the entire canvas
 
-const characterHitBoxWidth = screenLength / 30;
-const characterPosX = 100;
-const characterPosY = 200;
-const pipeWidth = 100;
-const obstacleInterval = 2000;
+const characterHitBoxWidth = canvasWidth / 30;
+const characterPosX = canvasWidth / 5;
+const characterPosY = canvasWidth / 2;
+const pipeWidth = canvasWidth / 5.6;
+const obstacleInterval = 2000; // INTERVAL =======================
 
-//Instantiate character
-const N = 1000;
-const mutationFactor = 0.2;
+//==============Instantiate character ===============
+const N = 500;
+const mutationFactor = 0.1;
 let birds = generateBirds(N);
 
 let bestBird = birds[0]; //default to the first one
@@ -40,6 +47,14 @@ let allDamaged;
 
 let bestDistance = 0;
 let previousBest = 0;
+
+let generation = 0;
+let generationsWithoutImprovement = 0;
+const maxGenerationsWithoutImprovement = 10;
+
+// Track performance over multiple generations
+const performanceWindow = 5;
+let performanceHistory = [];
 
 //If saved in local storage, get that brain
 if (localStorage.getItem("bestBrain")) {
@@ -51,12 +66,12 @@ if (localStorage.getItem("bestBrain")) {
   }
 }
 
-const obstacle = new Obstacle(screenLength, characterHitBoxWidth, pipeWidth);
+const obstacle = new Obstacle(canvasWidth, characterHitBoxWidth, pipeWidth);
 obstacles.push(obstacle);
 
 //Instantiate Obstacles at a regular interval
 let obstacleTimer = setInterval(() => {
-  obstacles.push(new Obstacle(screenLength, characterHitBoxWidth, pipeWidth));
+  obstacles.push(new Obstacle(canvasWidth, characterHitBoxWidth, pipeWidth));
 }, obstacleInterval);
 
 function handleRestartEvent(event) {
@@ -76,19 +91,48 @@ function resetGame() {
   // Clear obstacles
   obstacles = [];
 
-  //Reset score
-  score = 0;
-
   // Reset obstacle interval
   clearInterval(obstacleTimer);
 
   obstacleTimer = setInterval(() => {
-    obstacles.push(new Obstacle(screenLength, characterHitBoxWidth, pipeWidth));
+    obstacles.push(new Obstacle(canvasWidth, characterHitBoxWidth, pipeWidth));
   }, obstacleInterval);
 
   if (previousBest < bestDistance) {
     previousBest = bestDistance;
+    generationsWithoutImprovement = 0; // Reset counter if improvement is seen
+    generation++;
+  } else {
+    generationsWithoutImprovement++;
+    if (generationsWithoutImprovement >= maxGenerationsWithoutImprovement) {
+      mutationFactor *= 1.1; // Increase mutation factor if no improvement
+      generationsWithoutImprovement = 0; // Reset counter
+    }
   }
+
+  // Update performance history
+  performanceHistory.push(bestDistance);
+  if (performanceHistory.length > performanceWindow) {
+    performanceHistory.shift(); // Remove oldest performance record
+  }
+
+  // Calculate average performance over the window
+  const averagePerformance =
+    performanceHistory.reduce((sum, value) => sum + value, 0) /
+    performanceHistory.length;
+
+  // Adjust mutation factor based on average performance trend
+  if (performanceHistory.length === performanceWindow) {
+    const performanceTrend =
+      averagePerformance - performanceHistory[performanceHistory.length - 1];
+
+    if (performanceTrend > 0) {
+      mutationFactor *= 0.9; // Decrease mutation factor if performance is improving
+    } else {
+      mutationFactor *= 1.1; // Increase mutation factor if performance is declining or stagnating
+    }
+  }
+
   bestDistance = 0;
 }
 
@@ -124,9 +168,9 @@ function animate() {
 
   if (!allDamaged) {
     //Redraw the Canvas
-    Gamecanvas.height = 600;
-    Gamecanvas.width = 600;
-    ctx.strokeRect(0, 0, screenLength, screenLength);
+    Gamecanvas.height = canvasWidth;
+    Gamecanvas.width = canvasWidth;
+    ctx.strokeRect(0, 0, canvasWidth, canvasWidth);
 
     // Update and draw each obstacle
     for (let i = obstacles.length - 1; i >= 0; i--) {
@@ -142,7 +186,7 @@ function animate() {
 
     //Update the character position
     for (let i = 0; i < birds.length; i++) {
-      birds[i].Update(obstacles, screenLength);
+      birds[i].Update(obstacles, canvasWidth);
     }
 
     //Draw characters
@@ -160,13 +204,22 @@ function animate() {
     // Number of birds left
     let birdsLeft = birds.filter((character) => !character.damaged).length;
 
-    // Draw Score
-    ctx.fillStyle = "black";
-    ctx.font = "24px Arial";
-    ctx.fillText(`All time Best Distance: ${previousBest}`, 10, 30);
-    ctx.fillText(`Current Best Distance: ${bestDistance}`, 10, 50);
-    ctx.fillText(`Birds left: ${birdsLeft}`, 400, 30);
-  } else {
+    // Draw Stats
+    statsCanvas.height = canvasWidth;
+    statsCanvas.width = window.innerWidth;
+    ctx.strokeRect(0, 0, canvasWidth, canvasWidth);
+    statsctx.fillStyle = "black";
+    statsctx.font = "18px Arial";
+    statsctx.fillText(`All time Best Distance: ${previousBest}`, 10, 20);
+    statsctx.fillText(`Current Best Distance: ${bestDistance}`, 10, 40);
+    statsctx.fillText(`Birds left: ${birdsLeft}`, 10, 60);
+    statsctx.fillText(`Generation: ${generation}`, 400, 20);
+    statsctx.fillText(
+      `Generations Without Improvement: ${generationsWithoutImprovement}`,
+      400,
+      40
+    );
+    statsctx.fillText(`Mutation Factor: ${mutationFactor}`, 400, 60);
   }
 
   Visualizer.drawNetwork(netctx, bestBird.brain);

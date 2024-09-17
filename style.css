@@ -1,13 +1,19 @@
 body {
+  margin: 0;
+  padding: 0;
+}
+
+#main-container {
   display: flex;
 }
 
 #myCanvas {
   background-color: rgb(252, 252, 252);
-  margin: 1rem;
+  margin: 10px;
 }
 
 #networkCanvas {
+  margin: 10px;
   background-color: black;
 }
 
@@ -18,8 +24,8 @@ body {
 }
 
 #btns button {
-  margin-top: 1rem;
-  padding: 0.5rem;
+  margin-top: 10px;
+  padding: 10px;
 }
 
 #btns button:hover {
