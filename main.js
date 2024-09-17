@@ -30,7 +30,8 @@ const pipeWidth = 100;
 const obstacleInterval = 2000;
 
 //Instantiate character
-const N = 100;
+const N = 1000;
+const mutationFactor = 0.2;
 let birds = generateBirds(N);
 
 let bestBird = birds[0]; //default to the first one
@@ -45,7 +46,7 @@ if (localStorage.getItem("bestBrain")) {
   for (let i = 0; i < birds.length; i++) {
     birds[i].brain = JSON.parse(localStorage.getItem("bestBrain"));
     if (i != 0) {
-      NeuralNetwork.mutate(birds[i].brain, 0.1);
+      NeuralNetwork.mutate(birds[i].brain, mutationFactor);
     }
   }
 }
@@ -156,11 +157,15 @@ function animate() {
     //Best Distance
     bestDistance = bestBird.distance;
 
+    // Number of birds left
+    let birdsLeft = birds.filter((character) => !character.damaged).length;
+
     // Draw Score
     ctx.fillStyle = "black";
     ctx.font = "24px Arial";
     ctx.fillText(`All time Best Distance: ${previousBest}`, 10, 30);
     ctx.fillText(`Current Best Distance: ${bestDistance}`, 10, 50);
+    ctx.fillText(`Birds left: ${birdsLeft}`, 400, 30);
   } else {
   }
 

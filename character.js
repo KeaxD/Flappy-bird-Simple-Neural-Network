@@ -14,7 +14,7 @@ export class Character {
     this.distance = 0;
 
     this.sensor = new Sensor(this);
-    this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 1]);
+    this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4, 1]);
   }
 
   Draw(ctx, bestBird) {
