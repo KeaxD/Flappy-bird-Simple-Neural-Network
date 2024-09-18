@@ -22,7 +22,7 @@ const netctx = networkCanvas.getContext("2d");
 
 //Stats Canvas
 const statsCanvas = document.getElementById("stats");
-statsCanvas.height = canvasWidth;
+statsCanvas.height = 200;
 statsCanvas.width = canvasWidth;
 const statsctx = statsCanvas.getContext("2d");
 
@@ -215,8 +215,8 @@ function animate() {
     let birdsLeft = birds.filter((character) => !character.damaged).length;
 
     // Draw Stats
-    statsCanvas.height = canvasWidth;
-    statsCanvas.width = window.innerWidth;
+    statsCanvas.height = 100;
+    statsCanvas.width = canvasWidth * 1.3;
     ctx.strokeRect(0, 0, canvasWidth, canvasWidth);
     statsctx.fillStyle = "black";
     statsctx.font = "18px Arial";

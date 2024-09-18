@@ -1,11 +1,28 @@
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 #main-container {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.canva-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(234, 231, 231);
+  border-radius: 0.5rem;
+  margin: 0.5rem;
+}
+
+.stats-canva-container {
+  display: flex;
+  justify-content: center;
 }
 
 #myCanvas {
@@ -32,4 +49,12 @@ body {
 #btns button:hover {
   cursor: pointer;
   background-color: blue;
+}
+
+.directions li {
+  font-size: 18px;
+}
+
+.note {
+  font-size: 16px;
 }

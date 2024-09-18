@@ -6,17 +6,51 @@
   </head>
   <body>
     <div id="main-container">
-      <canvas id="myCanvas"></canvas>
-      <div id="btns">
-        <button onclick="autoRun()">♾️</button>
-        <button onclick="reset()">🔄</button>
-        <button onclick="save()">💾</button>
-        <button onclick="discard()">🗑️</button>
+      <div class="canva-container">
+        <canvas id="myCanvas"></canvas>
+        <div id="btns">
+          <button onclick="autoRun()">♾️</button>
+          <button onclick="reset()">🔄</button>
+          <button onclick="save()">💾</button>
+          <button onclick="discard()">🗑️</button>
+        </div>
+        <canvas id="networkCanvas"></canvas>
       </div>
-      <canvas id="networkCanvas"></canvas>
-    </div>
-    <div>
-      <canvas id="stats"></canvas>
+      <div class="stats-canva-container">
+        <canvas id="stats"></canvas>
+      </div>
+      <div class="content-container">
+        <h2>Simple Neural Network</h2>
+        <div>
+          <ul class="directions">
+            <li>Each yellow lines from the bird represent a sensor</li>
+            <li>
+              The neural network represent the brain of the current best bird
+            </li>
+            <li>
+              You can reset a run if you'd like to try again with the same brain
+            </li>
+            <li>
+              At the end of each run, you can save the brain of the best bird if
+              you'd like to use it for the next run
+            </li>
+            <li>
+              You can also discard the current best brain if you'd like to try
+              again from zero
+            </li>
+            <li>
+              You can toggle autoplay to let the genetic experiment go
+              automatically
+            </li>
+          </ul>
+          <p class="note">
+            Note: This is a simple neural network that uses the sensors as input
+            to trigger a jump or not. The fitness function simply uses the brain
+            of the bird who traveled the longest distance. You cannot change any
+            of the parameters.
+          </p>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="character.js" ;></script>
